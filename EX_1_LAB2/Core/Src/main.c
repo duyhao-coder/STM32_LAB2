@@ -180,8 +180,9 @@ int hour = 15;
 int minute = 8;
 int second = 50;
 int index_led_matrix = 0;
+int temp=50;
 const int MAX_LED_MATRIX = 8;
-uint8_t matrix_buffer [8] = {0x18,0x24,0x42,0x42,0x7e,0x42,0x42,0x42};
+uint8_t matrix_buffer [8] = {0x40,0xA0,0x9E,0x41,0x41,0x9E,0xA0,0x40};
 GPIO_TypeDef* ENM_GPIO_Port[8] = {
     ENM0_GPIO_Port, ENM1_GPIO_Port, ENM2_GPIO_Port,
     ENM3_GPIO_Port, ENM4_GPIO_Port, ENM5_GPIO_Port,
@@ -193,6 +194,17 @@ uint16_t ENM_Pin[8] = {
     ENM3_Pin, ENM4_Pin, ENM5_Pin,
     ENM6_Pin, ENM7_Pin
 };
+void updateMatrix_buffer(){
+	matrix_buffer[0] = (matrix_buffer[0] >> 1) | (matrix_buffer[0] << 7);
+	matrix_buffer[1] = (matrix_buffer[1] >> 1) | (matrix_buffer[1] << 7);
+	matrix_buffer[2] = (matrix_buffer[2] >> 1) | (matrix_buffer[2] << 7);
+	matrix_buffer[3] = (matrix_buffer[3] >> 1) | (matrix_buffer[3] << 7);
+	matrix_buffer[4] = (matrix_buffer[4] >> 1) | (matrix_buffer[4] << 7);
+	matrix_buffer[5] = (matrix_buffer[5] >> 1) | (matrix_buffer[5] << 7);
+	matrix_buffer[6] = (matrix_buffer[6] >> 1) | (matrix_buffer[6] << 7);
+	matrix_buffer[7] = (matrix_buffer[7] >> 1) | (matrix_buffer[7] << 7);
+
+}
 void display_ledmatix(int row,int col)
 {
 	int shift = 1;// mask used to get bit by bit of buffer
@@ -413,6 +425,13 @@ int timer_flag2=0;
 int timer_cycle2=10;
 int timer_counter_matrix=0;
 int timer_flag_matrix=0;
+int timer_counter_uppdate=0;
+int timer_flag_uppdate=0;
+void setTimer_maxtrix_uppdate(int duration)
+{
+	timer_counter_uppdate=duration/timer_cycle;
+	timer_flag_uppdate=0;
+}
 void setTimer_maxtrix(int duration)
 {
 	timer_counter_matrix=duration/timer_cycle;
@@ -425,7 +444,14 @@ void timerRun_maxtrix()
 		timer_counter_matrix--;
 		if(timer_counter_matrix==0)
 			timer_flag_matrix=1;
-	}}
+	}
+	if(timer_counter_uppdate>0)
+	{
+		timer_counter_uppdate--;
+		if(timer_counter_uppdate==0)
+			timer_flag_uppdate=1;
+	}
+}
 void setTimer(int duration)
 {
 	timer_counter=duration/timer_cycle;
@@ -509,6 +535,7 @@ int main(void)
   setTimer1(250);
   setTimer2(1000);
   setTimer_maxtrix(200);
+  setTimer_maxtrix_uppdate(1000);
   int state=0;
   while (1)
   {
@@ -539,6 +566,14 @@ int main(void)
         if(index_led_matrix>=MAX_LED_MATRIX)
         	index_led_matrix=0;
         setTimer_maxtrix(10);
+    }
+    if(timer_flag_uppdate==1)
+    {
+    	updateMatrix_buffer(matrix_buffer);
+    	setTimer_maxtrix_uppdate(1000);
+
+
+
     }
     if(timer_flag2==1)
     {
