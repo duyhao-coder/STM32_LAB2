@@ -181,7 +181,9 @@ int minute = 8;
 int second = 50;
 int index_led_matrix = 0;
 const int MAX_LED_MATRIX = 8;
-uint8_t matrix_buffer [8] = {0x18,0x24,0x42,0x42,0x7e,0x42,0x42,0x42};
+//uint8_t matrix_buffer [8] = {0x18,0x24,0x42,0x42,0x7e,0x42,0x42,0x42};
+uint8_t matrix_buffer [8] = {0x20,0x10,0x08,0x18,0x24,0x7e,0x42,0x42};
+
 GPIO_TypeDef* ENM_GPIO_Port[8] = {
     ENM0_GPIO_Port, ENM1_GPIO_Port, ENM2_GPIO_Port,
     ENM3_GPIO_Port, ENM4_GPIO_Port, ENM5_GPIO_Port,
@@ -193,9 +195,9 @@ uint16_t ENM_Pin[8] = {
     ENM3_Pin, ENM4_Pin, ENM5_Pin,
     ENM6_Pin, ENM7_Pin
 };
+int shift = 1;// mask used to get bit by bit of buffer
 void display_ledmatix(int row,int col)
 {
-	int shift = 1;// mask used to get bit by bit of buffer
 
 		if(row == 0){// enable row 0
 			HAL_GPIO_WritePin(ROW0_GPIO_Port, ROW0_Pin, RESET);
